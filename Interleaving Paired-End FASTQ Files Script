@@ -1,1 +1,42 @@
+#!/usr/bin/env python3
+
+import argparse # This is used to handle command-line interfaces
+
+from Bio import SeqIO # This makes the interface easy to read, write and manipulate files with biological data
+
+# This is defining a class 
+def interleave_fastq(forward_file, reverse_file, output_file):
+    count = 0
+    # This is opening the files. The r is for read and the w is for write. This will also close the file when done
+    with open(forward_file, 'r') as fwd, \
+         open(reverse_file, 'r') as rev, \
+         open(output_file, 'w') as out:
+
+        r1_lines = [fwd.readline() for _ in range(4)]# This will read the forward file 4 lines at a time
+        r2_lines = [rev.readline() for _ in range(4)]# This will read the reverse file 4 lines at a time
+
+        while r1_lines[0] and r2_lines[0]:# This starts a loop to read the lines starting at the first line and write it in the output file
+            out.writelines(r1_lines)
+            out.writelines(r2_lines)
+
+            count += 1# This counts the number of reads
+            
+            r1_lines = [fwd.readline() for _ in range(4)]# This continues reading the lines in the files by 4 again
+            r2_lines = [rev.readline() for _ in range(4)]
+
+        
+        if len(r1_lines) != len(r2_lines):# If the reads of the 2 differnt files are not the same, you will get an error
+            raise ValueError("Differning numbers of records in the input files")# This prints the error message saying what is wrong
+    print(f"Interleaved {count} read pairs")# This prints the amount of interleaved reads count
+    
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Interleave Paired-End FASTQ Files')
+    parser.add_argument('forward_file', help='Forward reads FASTQ file')
+    parser.add_argument('reverse_file', help='Reverse reads FASTQ file')
+    parser.add_argument('output_file', help='Output interleaved FASTQ file')
+    args = parser.parse_args()
+    interleave_fastq(args.forward_file, args.reverse_file, args.output_file)
+
+
 
